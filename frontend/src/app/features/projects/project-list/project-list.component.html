@@ -1,0 +1,104 @@
+<div class="projects-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Projects</h1>
+      <p class="subtitle">{{ projects().length }} project{{ projects().length !== 1 ? 's' : '' }}</p>
+    </div>
+    <button mat-flat-button color="primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon> New Project
+    </button>
+  </div>
+
+  <!-- Inline Create / Edit Form -->
+  <div class="form-panel" *ngIf="showForm()">
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>{{ editTarget() ? 'Edit Project' : 'New Project' }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="project-form">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Project Title</mat-label>
+            <input matInput formControlName="title" placeholder="e.g. Customer Portal v2">
+            <mat-error *ngIf="form.get('title')?.hasError('required')">Title is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description (optional)</mat-label>
+            <textarea matInput formControlName="description" rows="3"
+                      placeholder="What is this project about?"></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button type="button" (click)="cancel()">Cancel</button>
+            <button mat-flat-button color="primary" type="submit"
+                    [disabled]="form.invalid || submitting()">
+              {{ submitting() ? 'Saving...' : (editTarget() ? 'Save Changes' : 'Create Project') }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Loading Skeletons -->
+  <div *ngIf="loading()" class="projects-grid">
+    <div class="project-skeleton" *ngFor="let i of [1,2,3,4,5,6]"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!loading() && projects().length === 0 && !showForm()" class="empty-state">
+    <mat-icon class="empty-icon">folder_open</mat-icon>
+    <h3>No projects yet</h3>
+    <p>Create your first project to start managing tasks with your team.</p>
+    <button mat-flat-button color="primary" (click)="openCreate()">
+      <mat-icon>add</mat-icon> Create Project
+    </button>
+  </div>
+
+  <!-- Projects Grid -->
+  <div *ngIf="!loading() && projects().length > 0" class="projects-grid">
+    <mat-card *ngFor="let p of projects()" class="project-card">
+      <div class="project-card-header">
+        <div class="project-avatar">
+          {{ p.title.charAt(0).toUpperCase() }}
+        </div>
+        <button mat-icon-button [matMenuTriggerFor]="cardMenu" class="card-menu"
+                (click)="$event.stopPropagation(); $event.preventDefault()">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #cardMenu>
+          <button mat-menu-item (click)="openEdit(p)">
+            <mat-icon>edit</mat-icon> Edit
+          </button>
+          <button mat-menu-item [routerLink]="['/projects', p.id, 'board']">
+            <mat-icon>view_kanban</mat-icon> Open Board
+          </button>
+          <button mat-menu-item (click)="delete(p)" class="danger-item">
+            <mat-icon color="warn">delete</mat-icon> Delete
+          </button>
+        </mat-menu>
+      </div>
+
+      <mat-card-content [routerLink]="['/projects', p.id]" class="clickable">
+        <h3 class="project-title">{{ p.title }}</h3>
+        <p class="project-desc">{{ p.description || 'No description provided.' }}</p>
+
+        <div class="project-meta">
+          <span class="meta-item">
+            <mat-icon>group</mat-icon> {{ p.memberCount }} member{{ p.memberCount !== 1 ? 's' : '' }}
+          </span>
+          <span class="meta-item">
+            <mat-icon>checklist</mat-icon> {{ p.taskCount }} task{{ p.taskCount !== 1 ? 's' : '' }}
+          </span>
+        </div>
+      </mat-card-content>
+
+      <mat-card-footer class="project-footer">
+        <span class="created-by">by {{ p.creatorName }}</span>
+        <span class="created-at">{{ timeAgo(p.createdAt) }}</span>
+      </mat-card-footer>
+    </mat-card>
+  </div>
+</div>

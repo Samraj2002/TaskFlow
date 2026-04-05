@@ -1,0 +1,118 @@
+<div class="dashboard">
+  <div class="page-header">
+    <div>
+      <h1>Good morning, {{ getFirstName() }} 👋</h1>
+      <p class="subtitle">Here's what's happening across your projects</p>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!loading() && dashboard() as d">
+    <!-- ── Stats Row ──────────────────────────────────────────────────────── -->
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <div class="stat-icon blue"><mat-icon>checklist</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ d.totalTasks }}</span>
+          <span class="stat-label">Total Tasks</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon green"><mat-icon>task_alt</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ d.completedTasks }}</span>
+          <span class="stat-label">Completed</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon yellow"><mat-icon>pending</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ d.inProgressTasks }}</span>
+          <span class="stat-label">In Progress</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon red"><mat-icon>warning</mat-icon></div>
+        <div class="stat-info">
+          <span class="stat-value">{{ d.overdueTasks }}</span>
+          <span class="stat-label">Overdue</span>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- ── Completion Banner ──────────────────────────────────────────────── -->
+    <mat-card class="completion-card">
+      <div class="completion-header">
+        <span>Overall Completion</span>
+        <strong>{{ d.completionPercent }}%</strong>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="d.completionPercent" color="primary"></mat-progress-bar>
+    </mat-card>
+
+    <!-- ── Charts + My Tasks ─────────────────────────────────────────────── -->
+    <div class="charts-row">
+      <!-- Priority Doughnut -->
+      <mat-card class="chart-card" *ngIf="priorityChartData()">
+        <mat-card-header>
+          <mat-card-title>Tasks by Priority</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <canvas baseChart
+                  [data]="priorityChartData()!"
+                  [options]="chartOptions"
+                  type="doughnut">
+          </canvas>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Project Progress Bar Chart -->
+      <mat-card class="chart-card wide" *ngIf="projectChartData()">
+        <mat-card-header>
+          <mat-card-title>Project Progress</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <canvas baseChart
+                  [data]="projectChartData()!"
+                  [options]="barOptions"
+                  type="bar">
+          </canvas>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- ── My Tasks ───────────────────────────────────────────────────────── -->
+    <mat-card *ngIf="d.myTasks.length > 0">
+      <mat-card-header>
+        <mat-card-title>My Open Tasks</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="my-tasks-list">
+          <div *ngFor="let task of d.myTasks" class="my-task-row">
+            <div class="task-priority-dot"
+                 [style.background-color]="{'High':'#ef4444','Medium':'#f59e0b','Low':'#10b981'}[task.priority]">
+            </div>
+            <div class="task-info">
+              <span class="task-name">{{ task.title }}</span>
+              <span class="task-project">{{ task.projectTitle }}</span>
+            </div>
+            <span class="due-badge" [class.overdue]="task.isOverdue" *ngIf="task.dueDate">
+              {{ task.dueDate | date:'MMM d' }}
+            </span>
+            <mat-chip [color]="task.status === 'InProgress' ? 'accent' : 'primary'" selected>
+              {{ task.status }}
+            </mat-chip>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </ng-container>
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="loading-state">
+    <div class="skeleton-stats">
+      <div class="skeleton-block" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+  </div>
+</div>

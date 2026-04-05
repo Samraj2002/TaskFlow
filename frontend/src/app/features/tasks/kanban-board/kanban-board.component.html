@@ -1,0 +1,108 @@
+<div class="kanban-wrapper">
+  <!-- Loading skeleton -->
+  <div *ngIf="loading()" class="kanban-skeleton">
+    <div class="skeleton-col" *ngFor="let i of [1,2,3]">
+      <div class="skeleton-header"></div>
+      <div class="skeleton-card" *ngFor="let j of [1,2,3]"></div>
+    </div>
+  </div>
+
+  <!-- Board -->
+  <div *ngIf="!loading()" class="kanban-board" cdkDropListGroup>
+    <div *ngFor="let col of columns()" class="kanban-column">
+
+      <!-- Column Header -->
+      <div class="col-header">
+        <div class="col-title">
+          <mat-icon [style.color]="col.color">{{ col.icon }}</mat-icon>
+          <span>{{ col.title }}</span>
+          <span class="task-count">{{ col.tasks.length }}</span>
+        </div>
+        <button mat-icon-button class="add-btn" (click)="openCreateTask(col.id)"
+                [matTooltip]="'Add task to ' + col.title">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+
+      <!-- Drop Zone -->
+      <div class="drop-zone"
+           cdkDropList
+           [id]="col.id"
+           [cdkDropListData]="col.tasks"
+           [cdkDropListConnectedTo]="columnIds()"
+           (cdkDropListDropped)="onTaskDrop($event, col.id)"
+           [class.empty]="col.tasks.length === 0">
+
+        <!-- Empty state -->
+        <div *ngIf="col.tasks.length === 0" class="empty-col">
+          <mat-icon>inbox</mat-icon>
+          <p>No tasks here</p>
+        </div>
+
+        <!-- Task Cards -->
+        <div *ngFor="let task of col.tasks"
+             class="task-card"
+             [class.overdue]="task.isOverdue"
+             cdkDrag
+             [cdkDragData]="task">
+
+          <!-- Drag handle visual -->
+          <div class="drag-preview" *cdkDragPlaceholder></div>
+
+          <!-- Priority stripe -->
+          <div class="priority-stripe" [style.background-color]="getPriorityColor(task.priority)"></div>
+
+          <div class="task-body">
+            <div class="task-header">
+              <span class="task-title">{{ task.title }}</span>
+              <button mat-icon-button [matMenuTriggerFor]="taskMenu" class="task-menu-btn"
+                      (click)="$event.stopPropagation()">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #taskMenu="matMenu">
+                <button mat-menu-item><mat-icon>edit</mat-icon>Edit</button>
+                <button mat-menu-item (click)="deleteTask(task, col)">
+                  <mat-icon color="warn">delete</mat-icon>Delete
+                </button>
+              </mat-menu>
+            </div>
+
+            <p *ngIf="task.description" class="task-desc">{{ task.description }}</p>
+
+            <div class="task-meta">
+              <!-- Priority chip -->
+              <span class="priority-chip" [style.color]="getPriorityColor(task.priority)"
+                    [style.border-color]="getPriorityColor(task.priority)">
+                <mat-icon class="chip-icon">{{ getPriorityIcon(task.priority) }}</mat-icon>
+                {{ task.priority }}
+              </span>
+
+              <!-- Due date -->
+              <span *ngIf="task.dueDate" class="due-date" [class.overdue-text]="task.isOverdue">
+                <mat-icon class="chip-icon">schedule</mat-icon>
+                {{ formatDueDate(task.dueDate) }}
+              </span>
+            </div>
+
+            <div class="task-footer">
+              <!-- Assignee avatar -->
+              <div *ngIf="task.assigneeName" class="avatar"
+                   [matTooltip]="task.assigneeName">
+                {{ task.assigneeInitials }}
+              </div>
+              <div *ngIf="!task.assigneeName" class="avatar unassigned"
+                   matTooltip="Unassigned">?</div>
+
+              <!-- Comment count -->
+              <span *ngIf="task.commentCount > 0" class="comment-count">
+                <mat-icon>chat_bubble_outline</mat-icon>
+                {{ task.commentCount }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /drop-zone -->
+    </div><!-- /kanban-column -->
+  </div><!-- /kanban-board -->
+</div>

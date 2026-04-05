@@ -1,0 +1,21 @@
+# ── .NET ─────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.DotSettings.user
+appsettings.Development.json
+
+# ── Angular ───────────────────────────────────────────────────
+node_modules/
+dist/
+.angular/
+*.js.map
+
+# ── General ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
